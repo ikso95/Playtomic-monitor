@@ -1,0 +1,32 @@
+[club]
+url = "https://playtomic.com/clubs/padel-pl-wroclaw"
+sport_id = "PADEL"
+
+[watch]
+look_ahead_days = 7
+minimum_notice_minutes = 0
+state_path = "state/availability_state.json"
+
+[[watch_windows]]
+days = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
+start = "17:30"
+end = "20:00"
+
+[filters]
+required_features = ["double"]
+excluded_name_substrings = ["single"]
+include_resource_names = []
+exclude_resource_names = []
+allowed_durations = [60, 90, 120]
+
+[notifications]
+providers = ["console"]
+notify_when_no_new_slots = false
+
+[notifications.callmebot_whatsapp]
+phone = "+48YOUR_NUMBER"
+api_key = "YOUR_CALLMEBOT_API_KEY"
+
+[notifications.telegram]
+bot_token = "123456:ABC"
+chat_id = "123456789"
