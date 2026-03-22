@@ -168,6 +168,9 @@ GitHub documents that scheduled workflows can be delayed during high load, espec
 - keep WhatsApp secrets in GitHub Secrets
   - `CALLMEBOT_PHONE`
   - `CALLMEBOT_API_KEY`
+- optional Telegram secrets in GitHub Secrets
+  - `TELEGRAM_BOT_TOKEN`
+  - `TELEGRAM_CHAT_ID`
 - the workflow builds `config.runtime.toml` during the run
 
 ### State persistence
@@ -185,6 +188,8 @@ That file is committed only when the actual slot signature set changes, so the w
 4. Add these repository secrets:
    - `CALLMEBOT_PHONE`
    - `CALLMEBOT_API_KEY`
+   - `TELEGRAM_BOT_TOKEN` (optional)
+   - `TELEGRAM_CHAT_ID` (optional)
 5. Open:
    `Settings -> Actions -> General`
 6. Make sure workflows are allowed.
@@ -193,6 +198,24 @@ That file is committed only when the actual slot signature set changes, so the w
 ### Editing play windows
 
 Update `config.github.toml`, commit, and push.
+
+### Sending to Telegram too
+
+To send to both WhatsApp and a Telegram group:
+
+1. Add the Telegram bot to the group chat.
+2. Add these GitHub repository secrets:
+   - `TELEGRAM_BOT_TOKEN`
+   - `TELEGRAM_CHAT_ID`
+3. Update `config.github.toml`:
+
+```toml
+[notifications]
+providers = ["callmebot_whatsapp", "telegram"]
+notify_when_no_new_slots = true
+```
+
+The workflow will inject the Telegram credentials into the runtime config automatically when those secrets exist.
 
 ### Important GitHub scheduling note
 

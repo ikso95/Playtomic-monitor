@@ -20,7 +20,7 @@ exclude_resource_names = []
 allowed_durations = [60, 90, 120]
 
 [notifications]
-providers = ["console"]
+providers = ["console"] # or ["callmebot_whatsapp", "telegram"] after both credentials are configured
 notify_when_no_new_slots = false
 
 [notifications.callmebot_whatsapp]

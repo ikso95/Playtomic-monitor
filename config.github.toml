@@ -20,5 +20,5 @@ exclude_resource_names = []
 allowed_durations = [90] # [60, 90, 120]
 
 [notifications]
-providers = ["callmebot_whatsapp"]
-notify_when_no_new_slots = false
+providers = ["callmebot_whatsapp", "telegram"] # add "telegram" after TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID are set in GitHub Secrets
+notify_when_no_new_slots = true

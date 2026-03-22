@@ -31,6 +31,8 @@ jobs:
         env:
           CALLMEBOT_PHONE: ${{ secrets.CALLMEBOT_PHONE }}
           CALLMEBOT_API_KEY: ${{ secrets.CALLMEBOT_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           test -n "$CALLMEBOT_PHONE"
           test -n "$CALLMEBOT_API_KEY"
@@ -41,6 +43,14 @@ jobs:
           phone = "$CALLMEBOT_PHONE"
           api_key = "$CALLMEBOT_API_KEY"
           EOF
+          if [ -n "$TELEGRAM_BOT_TOKEN" ] && [ -n "$TELEGRAM_CHAT_ID" ]; then
+            cat <<EOF >> config.runtime.toml
+
+            [notifications.telegram]
+            bot_token = "$TELEGRAM_BOT_TOKEN"
+            chat_id = "$TELEGRAM_CHAT_ID"
+            EOF
+          fi
 
       - name: Run monitor
         run: python3 playtomic_monitor.py --config config.runtime.toml
