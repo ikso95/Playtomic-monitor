@@ -37,19 +37,13 @@ jobs:
           test -n "$CALLMEBOT_PHONE"
           test -n "$CALLMEBOT_API_KEY"
           cp config.github.toml config.runtime.toml
-          cat <<EOF >> config.runtime.toml
-
-          [notifications.callmebot_whatsapp]
-          phone = "$CALLMEBOT_PHONE"
-          api_key = "$CALLMEBOT_API_KEY"
-          EOF
+          printf '\n[notifications.callmebot_whatsapp]\nphone = "%s"\napi_key = "%s"\n' \
+            "$CALLMEBOT_PHONE" \
+            "$CALLMEBOT_API_KEY" >> config.runtime.toml
           if [ -n "$TELEGRAM_BOT_TOKEN" ] && [ -n "$TELEGRAM_CHAT_ID" ]; then
-            cat <<EOF >> config.runtime.toml
-
-            [notifications.telegram]
-            bot_token = "$TELEGRAM_BOT_TOKEN"
-            chat_id = "$TELEGRAM_CHAT_ID"
-            EOF
+            printf '\n[notifications.telegram]\nbot_token = "%s"\nchat_id = "%s"\n' \
+              "$TELEGRAM_BOT_TOKEN" \
+              "$TELEGRAM_CHAT_ID" >> config.runtime.toml
           fi
 
       - name: Run monitor
