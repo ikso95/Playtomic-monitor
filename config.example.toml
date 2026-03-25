@@ -12,6 +12,11 @@ days = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
 start = "17:30"
 end = "20:00"
 
+[[notification_windows]]
+days = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
+start = "08:00"
+end = "22:00"
+
 [filters]
 required_features = ["double"]
 excluded_name_substrings = ["single"]

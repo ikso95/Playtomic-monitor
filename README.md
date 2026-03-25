@@ -129,6 +129,23 @@ end = "13:00"
 
 Slots must fit fully inside the configured window.
 
+## Quiet hours
+
+You can restrict when the monitor is allowed to send notifications:
+
+```toml
+[[notification_windows]]
+days = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
+start = "08:00"
+end = "22:00"
+```
+
+Outside that notification window:
+
+- the monitor does not send WhatsApp or Telegram messages
+- newly discovered night slots are not marked as seen
+- if those slots are still available in the morning, they can still trigger a notification later
+
 ## Customizing courts
 
 Defaults already prefer doubles courts by requiring the `double` feature and excluding names containing `single`.

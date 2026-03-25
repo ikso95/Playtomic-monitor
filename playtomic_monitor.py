@@ -221,6 +221,12 @@ def normalize_windows(raw_windows: list[dict[str, Any]]) -> list[WindowRule]:
     return windows
 
 
+def normalize_optional_windows(raw_windows: list[dict[str, Any]]) -> list[WindowRule]:
+    if not raw_windows:
+        return []
+    return normalize_windows(raw_windows)
+
+
 def extract_next_data_payload(html: str) -> dict[str, Any]:
     match = re.search(
         r'<script id="__NEXT_DATA__" type="application/json">\s*(.*?)\s*</script>',
@@ -390,6 +396,36 @@ def collect_matching_slots(
     return matching_slots
 
 
+def is_datetime_within_window(moment: datetime, window: WindowRule) -> bool:
+    if moment.weekday() not in window.weekdays:
+        return False
+
+    window_start = datetime.combine(moment.date(), window.start, tzinfo=moment.tzinfo)
+    window_end = datetime.combine(moment.date(), window.end, tzinfo=moment.tzinfo)
+
+    if window_end > window_start:
+        return window_start <= moment <= window_end
+
+    if moment >= window_start:
+        return True
+
+    previous_day = moment - timedelta(days=1)
+    if previous_day.weekday() not in window.weekdays:
+        return False
+    previous_start = datetime.combine(previous_day.date(), window.start, tzinfo=moment.tzinfo)
+    previous_end = datetime.combine(moment.date(), window.end, tzinfo=moment.tzinfo)
+    return previous_start <= moment <= previous_end
+
+
+def should_send_notifications_now(config: dict[str, Any], timezone_name: str) -> bool:
+    notification_windows = normalize_optional_windows(config.get("notification_windows", []))
+    if not notification_windows:
+        return True
+
+    now_local = datetime.now(ZoneInfo(timezone_name))
+    return any(is_datetime_within_window(now_local, window) for window in notification_windows)
+
+
 def load_state(path: Path) -> dict[str, Any]:
     if not path.exists():
         return {"known_slots": []}
@@ -402,6 +438,14 @@ def load_state(path: Path) -> dict[str, Any]:
 def build_state_payload(slots: list[Slot]) -> dict[str, Any]:
     return {
         "known_slots": sorted({slot.signature for slot in slots}),
+    }
+
+
+def retain_previously_known_slots(previous_state: dict[str, Any], matches: list[Slot]) -> dict[str, Any]:
+    previous_known = set(previous_state.get("known_slots", []))
+    current_signatures = {slot.signature for slot in matches}
+    return {
+        "known_slots": sorted(previous_known.intersection(current_signatures)),
     }
 
 
@@ -519,6 +563,7 @@ def run_monitor(config_path: Path, dry_run: bool, test_notification: str | None)
     previous_state = load_state(state_path)
     known_slots = set(previous_state.get("known_slots", []))
     new_slots = [slot for slot in matches if slot.signature not in known_slots]
+    notifications_allowed_now = should_send_notifications_now(config=config, timezone_name=club.timezone)
 
     summary = format_run_summary(club=club, matches=matches, new_slots=new_slots, dry_run=dry_run)
     print(summary)
@@ -526,10 +571,14 @@ def run_monitor(config_path: Path, dry_run: bool, test_notification: str | None)
     if dry_run:
         return 0
 
-    if new_slots or should_notify_when_no_new_slots(config):
+    if notifications_allowed_now and (new_slots or should_notify_when_no_new_slots(config)):
         send_notifications(config, summary)
 
-    save_state(state_path, matches, previous_state=previous_state)
+    next_state = previous_state if notifications_allowed_now else retain_previously_known_slots(previous_state, matches)
+    slots_for_state = matches if notifications_allowed_now else [
+        slot for slot in matches if slot.signature in set(next_state.get("known_slots", []))
+    ]
+    save_state(state_path, slots_for_state, previous_state=previous_state)
     return 0
 
 
