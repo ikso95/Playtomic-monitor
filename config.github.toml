@@ -30,4 +30,4 @@ allowed_durations = [90] # [60, 90, 120]
 
 [notifications]
 providers = ["telegram"]
-notify_when_no_new_slots = false
+notify_when_no_new_slots = true
