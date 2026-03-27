@@ -2,7 +2,7 @@
 
 Small local monitor for Playtomic club availability.
 
-It polls the public Playtomic availability endpoint, filters slots by your time windows and court preferences, remembers what was already seen, and sends a notification only when a new matching slot appears.
+It polls the public Playtomic availability endpoint for one or more clubs, filters slots by your time windows and court preferences, remembers what was already seen, and sends a notification only when a new matching slot appears.
 
 ## Why this approach
 
@@ -17,6 +17,7 @@ It polls the public Playtomic availability endpoint, filters slots by your time 
   - fetches availability from the public Playtomic API
   - filters to doubles courts by default
   - filters by configurable weekday/time windows
+  - supports either one `[club]` or many `[[clubs]]`
   - stores prior matches in `state/availability_state.json`
   - notifies only about newly appeared matching slots
 - `install_launchd.py`
@@ -58,6 +59,22 @@ python3 playtomic_monitor.py --config config.toml --dry-run
 ```
 
 `--dry-run` prints matches and does not update state or send notifications.
+
+## Configuring clubs
+
+Use either a single `[club]` entry or multiple `[[clubs]]` entries.
+
+Example with both Padel Pl Wrocław and Fiesta Padel:
+
+```toml
+[[clubs]]
+url = "https://playtomic.com/clubs/padel-pl-wroclaw"
+sport_id = "PADEL"
+
+[[clubs]]
+url = "https://playtomic.com/clubs/fiesta-padel"
+sport_id = "PADEL"
+```
 
 ## Enable WhatsApp via CallMeBot
 
