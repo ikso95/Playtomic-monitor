@@ -1,5 +1,9 @@
-[club]
+[[clubs]]
 url = "https://playtomic.com/clubs/padel-pl-wroclaw"
+sport_id = "PADEL"
+
+[[clubs]]
+url = "https://playtomic.com/clubs/fiesta-padel"
 sport_id = "PADEL"
 
 [watch]

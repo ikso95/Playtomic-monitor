@@ -81,6 +81,14 @@ class Slot:
         )
 
 
+@dataclass(frozen=True)
+class ClubRun:
+    club: ClubInfo
+    matches: tuple[Slot, ...]
+    new_slots: tuple[Slot, ...]
+    notifications_allowed_now: bool
+
+
 def http_get_json(url: str) -> Any:
     request = urllib.request.Request(
         url,
@@ -435,25 +443,9 @@ def load_state(path: Path) -> dict[str, Any]:
         raise MonitorError(f"State file is not valid JSON: {path}") from exc
 
 
-def build_state_payload(slots: list[Slot]) -> dict[str, Any]:
-    return {
-        "known_slots": sorted({slot.signature for slot in slots}),
-    }
-
-
-def retain_previously_known_slots(previous_state: dict[str, Any], matches: list[Slot]) -> dict[str, Any]:
-    previous_known = set(previous_state.get("known_slots", []))
-    current_signatures = {slot.signature for slot in matches}
-    return {
-        "known_slots": sorted(previous_known.intersection(current_signatures)),
-    }
-
-
-def save_state(path: Path, slots: list[Slot], previous_state: dict[str, Any] | None = None) -> bool:
+def save_state_payload(path: Path, payload: dict[str, Any], previous_state: dict[str, Any] | None = None) -> bool:
     path.parent.mkdir(parents=True, exist_ok=True)
-    payload = build_state_payload(slots)
-    previous_known_slots = sorted(set((previous_state or {}).get("known_slots", [])))
-    if previous_known_slots == payload["known_slots"]:
+    if (previous_state or {}) == payload:
         return False
     path.write_text(json.dumps(payload, indent=2, sort_keys=True))
     return True
@@ -543,18 +535,67 @@ def should_notify_when_no_new_slots(config: dict[str, Any]) -> bool:
     return bool(notifications.get("notify_when_no_new_slots", False))
 
 
-def run_monitor(config_path: Path, dry_run: bool, test_notification: str | None) -> int:
-    config = load_config(config_path)
-    club_section = config.get("club", {})
+def get_club_sections(config: dict[str, Any]) -> list[dict[str, Any]]:
+    legacy_club = config.get("club")
+    clubs = config.get("clubs", [])
+
+    if legacy_club and clubs:
+        raise MonitorError("Use either [club] or [[clubs]] in the config, not both.")
+
+    if legacy_club:
+        return [legacy_club]
+
+    if clubs:
+        return clubs
+
+    raise MonitorError("Config must include [club] or at least one [[clubs]] entry.")
+
+
+def build_club_run(
+    club_section: dict[str, Any],
+    config: dict[str, Any],
+    known_slots: set[str],
+) -> ClubRun:
     club_url = club_section["url"]
     sport_id = club_section.get("sport_id", "PADEL")
+    club = fetch_club_info(club_url=club_url, sport_id=sport_id)
+    matches = tuple(collect_matching_slots(club=club, config=config))
+    new_slots = tuple(slot for slot in matches if slot.signature not in known_slots)
+    notifications_allowed_now = should_send_notifications_now(config=config, timezone_name=club.timezone)
+    return ClubRun(
+        club=club,
+        matches=matches,
+        new_slots=new_slots,
+        notifications_allowed_now=notifications_allowed_now,
+    )
+
+
+def format_combined_summary(sections: list[str]) -> str:
+    return "\n\n".join(section for section in sections if section)
+
+
+def build_next_state_payload(previous_state: dict[str, Any], club_runs: list[ClubRun]) -> dict[str, Any]:
+    previous_known = set(previous_state.get("known_slots", []))
+    next_known: set[str] = set()
+
+    for club_run in club_runs:
+        current_signatures = {slot.signature for slot in club_run.matches}
+        if club_run.notifications_allowed_now:
+            next_known.update(current_signatures)
+        else:
+            next_known.update(previous_known.intersection(current_signatures))
+
+    return {"known_slots": sorted(next_known)}
+
+
+def run_monitor(config_path: Path, dry_run: bool, test_notification: str | None) -> int:
+    config = load_config(config_path)
+    club_sections = get_club_sections(config)
+    notify_when_no_new_slots = should_notify_when_no_new_slots(config)
 
     if test_notification:
         send_notifications(config, test_notification)
         return 0
-
-    club = fetch_club_info(club_url=club_url, sport_id=sport_id)
-    matches = collect_matching_slots(club=club, config=config)
 
     state_path = Path(config["watch"].get("state_path", "state/availability_state.json"))
     if not state_path.is_absolute():
@@ -562,23 +603,43 @@ def run_monitor(config_path: Path, dry_run: bool, test_notification: str | None)
 
     previous_state = load_state(state_path)
     known_slots = set(previous_state.get("known_slots", []))
-    new_slots = [slot for slot in matches if slot.signature not in known_slots]
-    notifications_allowed_now = should_send_notifications_now(config=config, timezone_name=club.timezone)
+    club_runs = [
+        build_club_run(club_section=club_section, config=config, known_slots=known_slots)
+        for club_section in club_sections
+    ]
 
-    summary = format_run_summary(club=club, matches=matches, new_slots=new_slots, dry_run=dry_run)
+    summary = format_combined_summary(
+        [
+            format_run_summary(
+                club=club_run.club,
+                matches=list(club_run.matches),
+                new_slots=list(club_run.new_slots),
+                dry_run=dry_run,
+            )
+            for club_run in club_runs
+        ]
+    )
     print(summary)
 
     if dry_run:
         return 0
 
-    if notifications_allowed_now and (new_slots or should_notify_when_no_new_slots(config)):
-        send_notifications(config, summary)
-
-    next_state = previous_state if notifications_allowed_now else retain_previously_known_slots(previous_state, matches)
-    slots_for_state = matches if notifications_allowed_now else [
-        slot for slot in matches if slot.signature in set(next_state.get("known_slots", []))
+    notification_sections = [
+        format_run_summary(
+            club=club_run.club,
+            matches=list(club_run.matches),
+            new_slots=list(club_run.new_slots),
+            dry_run=False,
+        )
+        for club_run in club_runs
+        if club_run.notifications_allowed_now
+        and (club_run.new_slots or notify_when_no_new_slots)
     ]
-    save_state(state_path, slots_for_state, previous_state=previous_state)
+    if notification_sections:
+        send_notifications(config, format_combined_summary(notification_sections))
+
+    next_state = build_next_state_payload(previous_state=previous_state, club_runs=club_runs)
+    save_state_payload(state_path, next_state, previous_state=previous_state)
     return 0
 
 
