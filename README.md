@@ -21,7 +21,7 @@ It polls the public Playtomic availability endpoint for one or more clubs, filte
   - stores prior matches in `state/availability_state.json`
   - notifies only about newly appeared matching slots
 - `install_launchd.py`
-  - installs an hourly macOS `launchd` agent
+  - installs a macOS `launchd` agent using `config.toml`
 - `config.toml`
   - editable local config
 - `config.example.toml`
@@ -46,7 +46,7 @@ providers = ["callmebot_whatsapp"]
 notify_when_no_new_slots = true
 ```
 
-When enabled, the hourly run will also send messages like:
+When enabled, the scheduled run will also send messages like:
 
 - `No new matching Padel Pl Wrocław slots since the last run.`
 - `No matching Padel Pl Wrocław slots right now.`
@@ -110,16 +110,26 @@ bot_token = "123456:ABC"
 chat_id = "123456789"
 ```
 
-## Install hourly automation on macOS
+## Install local automation on macOS
 
 ```bash
 cd /Users/oskarlis/AndroidStudioProjects/Playtomic
-python3 install_launchd.py --config /Users/oskarlis/AndroidStudioProjects/Playtomic/config.toml --interval 3600 --load
+python3 install_launchd.py --config /Users/oskarlis/AndroidStudioProjects/Playtomic/config.toml --load
 ```
 
 This writes:
 
 - `~/Library/LaunchAgents/com.oskarlis.playtomic.monitor.plist`
+
+The local polling interval now comes from `config.toml`:
+
+```toml
+[launchd]
+interval_seconds = 1200
+```
+
+If `[launchd].interval_seconds` is missing, the installer falls back to `1200` seconds.
+Passing `--interval` still overrides the config for one-off installs.
 
 Logs go to:
 
