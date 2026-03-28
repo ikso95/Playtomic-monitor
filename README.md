@@ -1,6 +1,6 @@
 # Playtomic Availability Monitor
 
-Small local monitor for Playtomic club availability.
+GitHub Actions monitor for Playtomic club availability.
 
 It polls the public Playtomic availability endpoint for one or more clubs, filters slots by your time windows and court preferences, remembers what was already seen, and sends a notification only when a new matching slot appears.
 
@@ -8,7 +8,7 @@ It polls the public Playtomic availability endpoint for one or more clubs, filte
 
 - Playtomic exposes public availability data for this club without logging in.
 - Official WhatsApp messaging is not the best fit for a free personal automation.
-- This project keeps everything local on your Mac and uses only Python's standard library.
+- This project runs on GitHub Actions and uses only Python's standard library.
 
 ## What I implemented
 
@@ -20,10 +20,8 @@ It polls the public Playtomic availability endpoint for one or more clubs, filte
   - supports either one `[club]` or many `[[clubs]]`
   - stores prior matches in `state/availability_state.json`
   - notifies only about newly appeared matching slots
-- `install_launchd.py`
-  - installs a macOS `launchd` agent using `config.toml`
-- `config.toml`
-  - editable local config
+- `config.github.toml`
+  - editable GitHub Actions config
 - `config.example.toml`
   - clean template copy
 
@@ -55,7 +53,7 @@ When enabled, the scheduled run will also send messages like:
 
 ```bash
 cd /Users/oskarlis/AndroidStudioProjects/Playtomic
-python3 playtomic_monitor.py --config config.toml --dry-run
+python3 playtomic_monitor.py --config config.github.toml --dry-run
 ```
 
 `--dry-run` prints matches and does not update state or send notifications.
@@ -80,7 +78,7 @@ sport_id = "PADEL"
 
 1. Open [CallMeBot WhatsApp instructions](https://www.callmebot.com/blog/free-api-whatsapp-messages/).
 2. Follow the activation flow and get your API key.
-3. Edit `config.toml`:
+3. Edit `config.github.toml`:
 
 ```toml
 [notifications]
@@ -94,7 +92,7 @@ api_key = "YOUR_CALLMEBOT_API_KEY"
 4. Test:
 
 ```bash
-python3 playtomic_monitor.py --config config.toml --test-notification "Playtomic test"
+python3 playtomic_monitor.py --config config.github.toml --test-notification "Playtomic test"
 ```
 
 ## Telegram fallback
@@ -110,35 +108,9 @@ bot_token = "123456:ABC"
 chat_id = "123456789"
 ```
 
-## Install local automation on macOS
-
-```bash
-cd /Users/oskarlis/AndroidStudioProjects/Playtomic
-python3 install_launchd.py --config /Users/oskarlis/AndroidStudioProjects/Playtomic/config.toml --load
-```
-
-This writes:
-
-- `~/Library/LaunchAgents/com.oskarlis.playtomic.monitor.plist`
-
-The local polling interval now comes from `config.toml`:
-
-```toml
-[launchd]
-interval_seconds = 1200
-```
-
-If `[launchd].interval_seconds` is missing, the installer falls back to `1200` seconds.
-Passing `--interval` still overrides the config for one-off installs.
-
-Logs go to:
-
-- `/Users/oskarlis/AndroidStudioProjects/Playtomic/tmp/launchd.stdout.log`
-- `/Users/oskarlis/AndroidStudioProjects/Playtomic/tmp/launchd.stderr.log`
-
 ## Customizing play windows
 
-Edit `watch_windows` in `config.toml`.
+Edit `watch_windows` in `config.github.toml`.
 
 Example:
 
@@ -187,8 +159,7 @@ include_resource_names = ["Kort 1", "Kort 2", "Kort 3"]
 ## Files
 
 - `/Users/oskarlis/AndroidStudioProjects/Playtomic/playtomic_monitor.py`
-- `/Users/oskarlis/AndroidStudioProjects/Playtomic/install_launchd.py`
-- `/Users/oskarlis/AndroidStudioProjects/Playtomic/config.toml`
+- `/Users/oskarlis/AndroidStudioProjects/Playtomic/config.github.toml`
 - `/Users/oskarlis/AndroidStudioProjects/Playtomic/config.example.toml`
 
 ## GitHub Actions
@@ -197,10 +168,10 @@ The repository includes a scheduled workflow in `.github/workflows/playtomic-mon
 
 It runs:
 
-- every hour at minute `17` UTC
+- every 20 minutes at minutes `17`, `37`, and `57` UTC
 - manually via `workflow_dispatch`
 
-### Why minute 17
+### Why minutes 17, 37, and 57
 
 GitHub documents that scheduled workflows can be delayed during high load, especially near the start of the hour, so the workflow is intentionally not scheduled at `:00`.
 
@@ -267,5 +238,5 @@ GitHub scheduled workflows run in UTC, not your local time zone.
 
 For example:
 
-- `17 * * * *` means every hour at minute `17` UTC
+- `17,37,57 * * * *` means every 20 minutes at minutes `17`, `37`, and `57` UTC
 - in winter Poland time, that is usually minute `17` of each local hour as well, but DST changes can shift local interpretation

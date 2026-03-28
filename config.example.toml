@@ -11,9 +11,6 @@ look_ahead_days = 7
 minimum_notice_minutes = 0
 state_path = "state/availability_state.json"
 
-[launchd]
-interval_seconds = 1200
-
 [[watch_windows]]
 days = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
 start = "17:30"

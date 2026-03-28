@@ -1,0 +1,4 @@
+__pycache__/
+*.py[cod]
+tmp/launchd.stdout.log
+tmp/launchd.stderr.log
