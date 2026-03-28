@@ -3,7 +3,7 @@ name: Playtomic Monitor
 on:
   workflow_dispatch:
   schedule:
-    - cron: "17 * * * *"
+    - cron: "17,37,57 * * * *"
 
 permissions:
   contents: write
