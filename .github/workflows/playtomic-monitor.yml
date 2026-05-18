@@ -34,12 +34,12 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
-          test -n "$CALLMEBOT_PHONE"
-          test -n "$CALLMEBOT_API_KEY"
-          cp config.github.toml config.runtime.toml
-          printf '\n[notifications.callmebot_whatsapp]\nphone = "%s"\napi_key = "%s"\n' \
-            "$CALLMEBOT_PHONE" \
-            "$CALLMEBOT_API_KEY" >> config.runtime.toml
+          cp config.shared.toml config.runtime.toml
+          if [ -n "$CALLMEBOT_PHONE" ] && [ -n "$CALLMEBOT_API_KEY" ]; then
+            printf '\n[notifications.callmebot_whatsapp]\nphone = "%s"\napi_key = "%s"\n' \
+              "$CALLMEBOT_PHONE" \
+              "$CALLMEBOT_API_KEY" >> config.runtime.toml
+          fi
           if [ -n "$TELEGRAM_BOT_TOKEN" ] && [ -n "$TELEGRAM_CHAT_ID" ]; then
             printf '\n[notifications.telegram]\nbot_token = "%s"\nchat_id = "%s"\n' \
               "$TELEGRAM_BOT_TOKEN" \
