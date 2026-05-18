@@ -1,0 +1,20 @@
+{
+  "$schema": "https://gofastmcp.com/public/schemas/fastmcp.json/v1.json",
+  "source": {
+    "type": "filesystem",
+    "path": "playtomic_mcp.py",
+    "entrypoint": "mcp"
+  },
+  "environment": {
+    "type": "uv",
+    "python": ">=3.12",
+    "dependencies": [
+      "fastmcp>=2.12.0"
+    ]
+  },
+  "deployment": {
+    "transport": "http",
+    "path": "/mcp/",
+    "log_level": "INFO"
+  }
+}
