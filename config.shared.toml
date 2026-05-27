@@ -7,7 +7,7 @@ url = "https://playtomic.com/clubs/fiesta-padel"
 sport_id = "PADEL"
 
 [watch]
-look_ahead_days = 30
+look_ahead_days = 10
 minimum_notice_minutes = 0
 state_path = "state/availability_state.json"
 
