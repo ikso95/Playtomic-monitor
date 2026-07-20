@@ -17,7 +17,7 @@ It polls the public Playtomic availability endpoint for one or more clubs, filte
   - scheduled CLI runner used by GitHub Actions
   - notifies only about newly appeared matching slots
 - `playtomic_core.py`
-  - fetches club metadata from the public club page
+  - reads stable club and court metadata from config instead of scraping the club webpage on every run
   - fetches availability from the public Playtomic API
   - filters to doubles courts by default
   - filters by configurable weekday/time windows
@@ -75,11 +75,33 @@ Example with both Padel Pl Wrocław and Fiesta Padel:
 [[clubs]]
 url = "https://playtomic.com/clubs/padel-pl-wroclaw"
 sport_id = "PADEL"
+tenant_id = "280bfe06-18e4-464f-a1f3-edc0bee96e35"
+name = "Padel Pl Wrocław"
+timezone = "Europe/Warsaw"
+slug = "padel-pl-wroclaw"
+
+[[clubs.resources]]
+resource_id = "2bd7a12a-3a6b-493d-8d58-9cb2a2392514"
+name = "Kort 1"
+features = ["indoor", "double", "panoramic"]
 
 [[clubs]]
 url = "https://playtomic.com/clubs/fiesta-padel"
 sport_id = "PADEL"
+tenant_id = "cf58118a-353b-4ec1-a51e-ea52acc99063"
+name = "Fiesta Padel"
+timezone = "Europe/Warsaw"
+slug = "fiesta-padel"
+
+[[clubs.resources]]
+resource_id = "c0a3d486-5401-49ae-bbb7-38907f67f08f"
+name = "Panoramic 1"
+features = ["indoor", "double", "panoramic"]
 ```
+
+Configure every court that the monitor should recognize. The complete metadata for the included clubs is in `config.shared.toml` and `config.example.toml`.
+
+Keeping this public metadata in config avoids a fragile dependency on Playtomic's club-page HTML and prevents a blocked webpage request from stopping availability checks. A URL by itself is not sufficient because availability responses identify courts by resource ID and do not include their names or features.
 
 ## Enable WhatsApp via CallMeBot
 
