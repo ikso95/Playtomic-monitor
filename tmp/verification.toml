@@ -1,6 +1,65 @@
 [club]
 url = "https://playtomic.com/clubs/padel-pl-wroclaw"
 sport_id = "PADEL"
+tenant_id = "280bfe06-18e4-464f-a1f3-edc0bee96e35"
+name = "Padel Pl Wrocław"
+timezone = "Europe/Warsaw"
+slug = "padel-pl-wroclaw"
+
+[[club.resources]]
+resource_id = "2bd7a12a-3a6b-493d-8d58-9cb2a2392514"
+name = "Kort 1"
+features = ["indoor", "double", "panoramic"]
+
+[[club.resources]]
+resource_id = "129107b6-c02a-4f01-b9ce-9903ec699bc6"
+name = "Kort 2"
+features = ["indoor", "double", "panoramic"]
+
+[[club.resources]]
+resource_id = "548add8f-a85d-411a-965c-d7246751ed7f"
+name = "Kort 3"
+features = ["indoor", "double", "panoramic"]
+
+[[club.resources]]
+resource_id = "a3b8c567-46e5-4e49-a520-a97d6899e705"
+name = "Kort 4"
+features = ["indoor", "double", "panoramic"]
+
+[[club.resources]]
+resource_id = "449c7765-3d36-4a04-a59f-2c8b40058f51"
+name = "Kort 5"
+features = ["indoor", "double", "panoramic"]
+
+[[club.resources]]
+resource_id = "ad5b4465-cd73-41c1-9999-f78ae6221f88"
+name = "Kort 6"
+features = ["indoor", "double", "panoramic"]
+
+[[club.resources]]
+resource_id = "67700b24-7fcf-4e4b-a593-d7c409bf403f"
+name = "Kort 7"
+features = ["indoor", "double", "panoramic"]
+
+[[club.resources]]
+resource_id = "74d3c2cf-1319-43ca-84db-5909cac98296"
+name = "Kort 8"
+features = ["indoor", "double", "panoramic"]
+
+[[club.resources]]
+resource_id = "1b3b6674-e2e5-4f09-8c00-3ec7aa50c1d6"
+name = "Kort 9 (single)"
+features = ["indoor", "single", "panoramic"]
+
+[[club.resources]]
+resource_id = "33904f46-1493-4640-aca5-83eddb058284"
+name = "Kort 10 (single)"
+features = ["indoor", "single", "panoramic"]
+
+[[club.resources]]
+resource_id = "da579108-2e5a-4d16-aaef-bfcb66bc7b34"
+name = "Maszyna do piłek - Pamiętaj, by zarezerwować jeszcze osobno kort!"
+features = ["indoor", "single", "wall"]
 
 [watch]
 look_ahead_days = 7

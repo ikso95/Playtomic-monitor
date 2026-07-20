@@ -168,35 +168,42 @@ def normalize_optional_windows(raw_windows: list[dict[str, Any]]) -> list[Window
     return normalize_windows(raw_windows)
 
 
-def extract_next_data_payload(html: str) -> dict[str, Any]:
-    match = re.search(
-        r'<script id="__NEXT_DATA__" type="application/json">\s*(.*?)\s*</script>',
-        html,
-        re.DOTALL,
-    )
-    if not match:
-        raise MonitorError("Could not find __NEXT_DATA__ on the Playtomic club page.")
-    return json.loads(match.group(1))
-
-
-def fetch_club_info(club_url: str, sport_id: str) -> ClubInfo:
-    html = http_get_text(club_url)
-    payload = extract_next_data_payload(html)
-    tenant = payload["props"]["pageProps"]["tenant"]
-    resources = tuple(
-        Resource(
-            resource_id=resource["resourceId"],
-            name=resource["name"],
-            features=tuple(resource.get("features", [])),
-            sport=resource["sport"],
+def build_club_info(club_section: dict[str, Any]) -> ClubInfo:
+    club_url = club_section["url"]
+    sport_id = club_section.get("sport_id", "PADEL")
+    metadata_fields = ("tenant_id", "name", "timezone", "slug", "resources")
+    missing_fields = [field for field in metadata_fields if field not in club_section]
+    if missing_fields:
+        missing_text = ", ".join(missing_fields)
+        raise MonitorError(
+            f"Club {club_url} is missing configured metadata: {missing_text}. "
+            "Add the public tenant and resource metadata to the club config."
         )
-        for resource in tenant["resources"]
-    )
+
+    raw_resources = club_section["resources"]
+    if not raw_resources:
+        raise MonitorError(f"Club {club_url} must configure at least one resource.")
+
+    try:
+        resources = tuple(
+            Resource(
+                resource_id=resource["resource_id"],
+                name=resource["name"],
+                features=tuple(resource.get("features", [])),
+                sport=resource.get("sport", sport_id),
+            )
+            for resource in raw_resources
+        )
+    except KeyError as exc:
+        raise MonitorError(
+            f"Club {club_url} has a resource missing configured metadata: {exc.args[0]}."
+        ) from exc
+
     return ClubInfo(
-        name=tenant["tenant_name"],
-        tenant_id=tenant["tenant_id"],
-        timezone=tenant["address"]["timezone"],
-        slug=tenant["slug"],
+        name=club_section["name"],
+        tenant_id=club_section["tenant_id"],
+        timezone=club_section["timezone"],
+        slug=club_section["slug"],
         sport_id=sport_id,
         resources=resources,
         club_url=club_url.rstrip("/"),
@@ -459,9 +466,7 @@ def build_club_run(
     config: dict[str, Any],
     known_slots: set[str],
 ) -> ClubRun:
-    club_url = club_section["url"]
-    sport_id = club_section.get("sport_id", "PADEL")
-    club = fetch_club_info(club_url=club_url, sport_id=sport_id)
+    club = build_club_info(club_section)
     matches = tuple(collect_matching_slots(club=club, config=config))
     new_slots = tuple(slot for slot in matches if slot.signature not in known_slots)
     notifications_allowed_now = should_send_notifications_now(config=config, timezone_name=club.timezone)

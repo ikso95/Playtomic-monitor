@@ -8,11 +8,11 @@ from fastmcp import FastMCP
 from playtomic_core import (
     DEFAULT_CONFIG_PATH,
     MonitorError,
+    build_club_info,
     build_club_runs,
     club_run_to_dict,
     club_to_dict,
     explain_filters as explain_config_filters,
-    fetch_club_info,
     format_combined_summary,
     get_club_sections,
     load_config,
@@ -108,10 +108,7 @@ def list_clubs(config_path: str | None = None) -> dict[str, Any]:
         config = load_config(resolved_config_path)
         clubs = []
         for club_section in get_club_sections(config):
-            club = fetch_club_info(
-                club_url=club_section["url"],
-                sport_id=club_section.get("sport_id", "PADEL"),
-            )
+            club = build_club_info(club_section)
             clubs.append(club_to_dict(club))
         return {
             "ok": True,
