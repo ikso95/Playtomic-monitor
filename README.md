@@ -299,3 +299,5 @@ For example:
 
 - `17,37,57 * * * *` means every 20 minutes at minutes `17`, `37`, and `57` UTC
 - in winter Poland time, that is usually minute `17` of each local hour as well, but DST changes can shift local interpretation
+
+Added from Linear.
