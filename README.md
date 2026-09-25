@@ -65,6 +65,19 @@ python3 playtomic_monitor.py --config config.shared.toml --dry-run
 
 `--dry-run` prints matches and does not update state or send notifications.
 
+## Local macOS control app
+
+The SwiftUI app starts and stops local monitoring, runs an immediate check, and shows the current status, last result, and script output. Automatic checks run every 20 minutes while the app is open.
+
+Build and open the app from this repository:
+
+```bash
+./scripts/build-macos-app.sh
+open "build/Playtomic Monitor.app"
+```
+
+The app uses `config.runtime.toml` if present, otherwise `config.shared.toml`. Its repeat interval comes from `[desktop].interval_seconds` in that config and defaults to 20 minutes.
+
 ## Configuring clubs
 
 Use either a single `[club]` entry or multiple `[[clubs]]` entries.

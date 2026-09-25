@@ -1,5 +1,7 @@
 __pycache__/
 *.py[cod]
+.build/
+/build/
 config.runtime.toml
 tmp/launchd.stdout.log
 tmp/launchd.stderr.log

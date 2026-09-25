@@ -162,3 +162,6 @@ allowed_durations = [90]
 [notifications]
 providers = ["telegram"]
 notify_when_no_new_slots = false
+
+[desktop]
+interval_seconds = 1200
