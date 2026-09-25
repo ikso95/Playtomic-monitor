@@ -79,6 +79,64 @@ resource_id = "2d22bd70-b212-49f8-b627-6fccabd6f0cd"
 name = "Panoramic 2"
 features = ["indoor", "double", "panoramic"]
 
+[[clubs]]
+url = "https://playtomic.com/clubs/radical-padel"
+sport_id = "PADEL"
+tenant_id = "7119365a-9064-4ef9-a599-f142817afebb"
+name = "Radical Padel"
+timezone = "Europe/Warsaw"
+slug = "radical-padel"
+
+[[clubs.resources]]
+resource_id = "74909c2e-170a-4e44-8892-677eadc99c59"
+name = "Padel 1"
+features = ["indoor", "double", "crystal"]
+
+[[clubs.resources]]
+resource_id = "61999abc-6b5c-4110-87f5-c3a89a40819d"
+name = "Padel 2"
+features = ["indoor", "double", "crystal"]
+
+[[clubs.resources]]
+resource_id = "ce1bf710-bb01-4f02-9a8b-a6d2e2019cc3"
+name = "Padel 3"
+features = ["indoor", "double", "panoramic"]
+
+[[clubs.resources]]
+resource_id = "b01766e7-8e0d-47ee-9d69-bb2ca4070381"
+name = "Padel 4"
+features = ["indoor", "double", "panoramic"]
+
+[[clubs.resources]]
+resource_id = "26bffb86-bbc0-4c3d-9d38-fc4a00b14891"
+name = "Padel 5"
+features = ["indoor", "double", "panoramic"]
+
+[[clubs.resources]]
+resource_id = "d4f5259c-c544-4564-ada5-ce31d4190563"
+name = "Padel 6"
+features = ["indoor", "double", "panoramic"]
+
+[[clubs.resources]]
+resource_id = "44bf6f4b-7173-4c20-9f7c-7989a78bdc68"
+name = "Padel 7"
+features = ["indoor", "double", "panoramic"]
+
+[[clubs.resources]]
+resource_id = "313a46e2-3d42-413a-ae3b-59b65e81d5d3"
+name = "Padel 8"
+features = ["indoor", "double", "panoramic"]
+
+[[clubs.resources]]
+resource_id = "2c239886-bea6-4589-92f5-b6ab10329444"
+name = "Padel 9"
+features = ["indoor", "double", "panoramic"]
+
+[[clubs.resources]]
+resource_id = "bafce993-e1cf-4b1d-aa7e-7de7dcd0a5ed"
+name = "Padel 10"
+features = ["indoor", "double", "panoramic"]
+
 [watch]
 look_ahead_days = 10
 minimum_notice_minutes = 0
