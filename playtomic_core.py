@@ -87,6 +87,7 @@ class ClubRun:
     matches: tuple[Slot, ...]
     new_slots: tuple[Slot, ...]
     notifications_allowed_now: bool
+    availability_checked: bool = True
 
 
 def resolve_config_path(config_path: str | Path | None = None) -> Path:
@@ -465,8 +466,18 @@ def build_club_run(
     club_section: dict[str, Any],
     config: dict[str, Any],
     known_slots: set[str],
+    *,
+    respect_notification_windows: bool = False,
 ) -> ClubRun:
     club = build_club_info(club_section)
+    if respect_notification_windows and not should_send_notifications_now(config=config, timezone_name=club.timezone):
+        return ClubRun(
+            club=club,
+            matches=(),
+            new_slots=(),
+            notifications_allowed_now=False,
+            availability_checked=False,
+        )
     matches = tuple(collect_matching_slots(club=club, config=config))
     new_slots = tuple(slot for slot in matches if slot.signature not in known_slots)
     notifications_allowed_now = should_send_notifications_now(config=config, timezone_name=club.timezone)
@@ -478,22 +489,42 @@ def build_club_run(
     )
 
 
-def build_club_runs(config_path: Path) -> tuple[dict[str, Any], dict[str, Any], list[ClubRun]]:
+def build_club_runs(
+    config_path: Path,
+    *,
+    respect_notification_windows: bool = False,
+) -> tuple[dict[str, Any], dict[str, Any], list[ClubRun]]:
+    """Fetch availability, optionally skipping clubs outside notification hours."""
     config = load_config(config_path)
     previous_state = load_state(resolve_state_path(config, config_path))
     known_slots = set(previous_state.get("known_slots", []))
     club_runs = [
-        build_club_run(club_section=club_section, config=config, known_slots=known_slots)
+        build_club_run(
+            club_section=club_section,
+            config=config,
+            known_slots=known_slots,
+            respect_notification_windows=respect_notification_windows,
+        )
         for club_section in get_club_sections(config)
     ]
     return config, previous_state, club_runs
 
 
 def build_next_state_payload(previous_state: dict[str, Any], club_runs: list[ClubRun]) -> dict[str, Any]:
+    if all(not club_run.availability_checked for club_run in club_runs):
+        return previous_state
+
     previous_known = set(previous_state.get("known_slots", []))
     next_known: set[str] = set()
 
     for club_run in club_runs:
+        if not club_run.availability_checked:
+            resource_ids = {resource.resource_id for resource in club_run.club.resources}
+            next_known.update(
+                signature for signature in previous_known
+                if signature.split("|", 1)[0] in resource_ids
+            )
+            continue
         current_signatures = {slot.signature for slot in club_run.matches}
         if club_run.notifications_allowed_now:
             next_known.update(current_signatures)

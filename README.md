@@ -172,7 +172,7 @@ Slots must fit fully inside the configured window.
 
 ## Quiet hours
 
-You can restrict when the monitor is allowed to send notifications:
+You can restrict when the monitor checks availability and sends notifications:
 
 ```toml
 [[notification_windows]]
@@ -183,9 +183,14 @@ end = "22:00"
 
 Outside that notification window:
 
+- scheduled and desktop checks skip Playtomic requests and print a quiet-hours skip message
 - the monitor does not send WhatsApp or Telegram messages
-- newly discovered night slots are not marked as seen
-- if those slots are still available in the morning, they can still trigger a notification later
+- saved slot state for skipped clubs stays unchanged
+- on the first check inside the window, the monitor fetches current availability and alerts about new matching slots
+
+The window uses each club's configured timezone. If clubs have different timezones, only those currently inside their window are checked. Without `notification_windows`, the monitor checks at any time.
+
+Manual MCP queries and `--dry-run` still fetch availability on demand during quiet hours without changing state or sending alerts. Explicit `--test-notification` messages also continue to bypass the window.
 
 ## Customizing courts
 

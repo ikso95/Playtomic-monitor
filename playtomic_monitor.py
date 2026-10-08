@@ -81,7 +81,10 @@ def run_monitor(config_path: Path, dry_run: bool, test_notification: str | None)
         send_notifications(config, test_notification)
         return 0
 
-    config, previous_state, club_runs = build_club_runs(config_path)
+    config, previous_state, club_runs = build_club_runs(
+        config_path,
+        respect_notification_windows=not dry_run,
+    )
 
     summary = format_combined_summary(
         [
@@ -91,12 +94,17 @@ def run_monitor(config_path: Path, dry_run: bool, test_notification: str | None)
                 new_slots=list(club_run.new_slots),
                 dry_run=dry_run,
             )
+            if club_run.availability_checked
+            else f"Skipping {club_run.club.name}: outside notification hours."
             for club_run in club_runs
         ]
     )
     print(summary)
 
     if dry_run:
+        return 0
+
+    if all(not club_run.availability_checked for club_run in club_runs):
         return 0
 
     notification_sections = [
