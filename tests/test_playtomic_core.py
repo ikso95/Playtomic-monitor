@@ -62,6 +62,7 @@ class ConfiguredClubMetadataTests(unittest.TestCase):
             [
                 "280bfe06-18e4-464f-a1f3-edc0bee96e35",
                 "cf58118a-353b-4ec1-a51e-ea52acc99063",
+                "7119365a-9064-4ef9-a599-f142817afebb",
             ],
         )
 
