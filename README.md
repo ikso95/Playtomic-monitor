@@ -318,4 +318,37 @@ For example:
 - `17,37,57 * * * *` means every 20 minutes at minutes `17`, `37`, and `57` UTC
 - in winter Poland time, that is usually minute `17` of each local hour as well, but DST changes can shift local interpretation
 
+## Codex cloud environment
+
+The project harness travels with the repository:
+
+- `AGENTS.md` contains project instructions and the required skill trigger.
+- `.agents/skills/oscar-file-suffix/SKILL.md` contains the temporary filename smoke-test skill.
+- Add future project skills under `.agents/skills/<skill-name>/SKILL.md`. Add a focused trigger to `AGENTS.md` when their use is required.
+
+Repository skills are available in cloud tasks. Personal skills installed only on your computer are not synced to the cloud. See the official [skills guide](https://learn.chatgpt.com/docs/build-skills) and [cloud environment guide](https://learn.chatgpt.com/docs/environments/cloud-environments).
+
+### Create the reusable environment
+
+1. Commit and push the harness files to the repository revision the cloud environment will use. Local uncommitted changes in this worktree are not sufficient.
+2. In a new Codex task, select **Work in > Cloud > Select environment > Create environment**, or use **Settings > Codex Cloud > Environments > Create environment**.
+3. Select this GitHub repository and choose **Get started**.
+4. Give the setup conversation this project-specific request:
+
+   > Prepare this repository with Python 3.12 or newer. Install its dependencies with `python3 -m pip install -e .` in the environment's Python environment and run `python3 -m unittest discover -s tests -v`. Verify that the root AGENTS.md and .agents/skills/oscar-file-suffix/SKILL.md are present. Preserve the repository skills for future tasks. Do not start the availability monitor or send notifications during setup. The SwiftUI app requires macOS; report that build as unavailable if this environment is Linux.
+
+5. Review the tested setup, save it, and select **Publish**. Choose that published environment for new cloud tasks. Use **Edit** and **Republish** when changing its reusable runtime setup.
+
+No running service or notification credentials are needed for the filename smoke test. Install/startup configuration prepares tools and services; `AGENTS.md` and repository skills supply the coding instructions.
+
+### Verify automatic harness use
+
+Start a fresh cloud task with this prompt, without mentioning the skill or suffix:
+
+> Create a small text file in the repository root containing "cloud harness check". Choose the filename yourself.
+
+Expected result: the agent reads the skill, announces `Using oscar-file-suffix.`, and creates a file such as `cloud-checkOscar.txt`. Inspect the task's tool activity for the skill read and its diff for the new file. A filename alone does not prove native skill discovery: the required `AGENTS.md` link can also load it. This test validates the complete harness path.
+
+The suffix applies to new authored files in local tasks too, with exceptions for fixed tool-required names documented in the skill. Existing filenames stay unchanged. To retire the experiment, remove the required-skill section from `AGENTS.md` and delete the skill directory; push those changes before starting another cloud task.
+
 Oskar Lis Dot Test
